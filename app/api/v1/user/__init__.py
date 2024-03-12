@@ -9,6 +9,6 @@ from . import (
 
 router = APIRouter(prefix='/user', tags=['user'])
 router.include_router(create.router)
-# router.include_router(delete.router)
+router.include_router(delete.router)
 router.include_router(retreive.router)
-# router.include_router(update.router)
+router.include_router(update.router)

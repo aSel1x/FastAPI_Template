@@ -10,22 +10,22 @@ router = APIRouter()
 
 @router.post('/')
 async def new_user(
-    user: models.UserCreate, db: Service = Depends(depends.get_service)
+        user: models.UserCreate,
+        service: Service = Depends(depends.get_service)
 ) -> models.UserBase:
     """
-    Создать нового пользователя:
+    Create new user:
 
-    - **id**: ID-пользователя
-    - **username**: Username-Пользователя
-    - **password**: Password-Пользователя
+    - **username**: Username
+    - **password**: Password
     """
 
-    if await db.user.db_repository.get_by_username(user.username):
+    if await service.user.db_repository.get_by_username(user.username):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail='Такой пользователь существует.',
+            detail='User exists.',
         )
 
-    user = await db.user.db_repository.new(user)
-    await db.session.commit()
+    user = await service.user.db_repository.new(user)
+    await service.session.commit()
     return models.UserBase(**user.__dict__)

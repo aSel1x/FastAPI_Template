@@ -8,11 +8,13 @@ router = APIRouter()
 
 
 @router.get('/')
-async def get(user: models.UserBase = Depends(depends.get_current_user)) -> models.UserBase:
+async def get(
+        user: models.UserBase = Depends(depends.get_current_user)
+) -> models.UserBase:
     """
-    Получить информацию о пользователе:
+    Get current user data:
 
-    - **id**: ID-пользователя
-    - **username**: Username-Пользователя
+    - **id**: ID
+    - **username**: Username
     """
     return models.UserBase(**user.__dict__)
