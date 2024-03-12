@@ -1,0 +1,50 @@
+version: '3.6'
+
+services:
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    entrypoint: sh -c "alembic upgrade head && python3 -m app"
+    volumes:
+      - shared-volume:/app/generated_files
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    container_name: postgres
+    image: postgres:15.1-alpine
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 80s
+    networks:
+      - app_network
+
+volumes:
+  postgres-data:
+  shared-volume:
+
+networks:
+  app_network:
+    name: app_network
