@@ -6,8 +6,9 @@ help:
 	@echo "AVAILABLE COMMANDS"
 	@echo "  run		Start the app"
 	@echo "  lint		Reformat code"
-	@echo "  migrate		Alembic migrate database"
-	@echo "  generate		Alembic generate database"
+	@echo "  migrate	Alembic migrate database"
+	@echo "  generate	Alembic generate database"
+	@echo "  docker		Docker container build"
 
 .PHONY: lint
 lint:
@@ -24,3 +25,7 @@ generate:
 .PHONY: migrate
 migrate:
 	poetry run alembic upgrade head
+
+.PHONY: docker
+docker:
+	docker-compose up -d
