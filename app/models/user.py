@@ -1,16 +1,16 @@
-from sqlmodel import SQLModel
+from sqlmodel import Field, SQLModel
 
-from .base_id import BaseID
+from .base import IDModel, TimestampModel
 
 
 class UserBase(SQLModel):
-    username: str
-    is_active: bool = True
+    username: str = Field()
+    is_active: bool = Field()
 
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field()
 
 
-class User(UserBase, BaseID, table=True):  # type: ignore
-    password: str
+class User(UserBase, IDModel, TimestampModel, table=True):  # type: ignore
+    password: str = Field()

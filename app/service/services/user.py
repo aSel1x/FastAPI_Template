@@ -11,7 +11,7 @@ class UserService:
             session: AsyncSession,
             background: BackgroundTasks
     ):
-        self.type_model = models.User
+        self.model = models.User
         self.session = session
         self.background = background
         self.db_repository = repositories.UserRepository(session)

@@ -32,7 +32,7 @@ async def get_token_pair(
             detail='This must be an authorization token or a long token',
         )
 
-    if await service.user.db_repository.get(payload.get('id')):
+    if await service.user.db_repository.retrieve_one(ident=payload.get('id')):
         token_pair = security.create_token_pair(payload)
         if data.get('action') != 'token_long':
             response.set_cookie(key='_token_long', value=token_pair.token_long)

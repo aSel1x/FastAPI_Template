@@ -1,4 +1,4 @@
-from .base_id import BaseID
+from .base import IDModel, UUIDModel
 from .user import (
     User,
     UserCreate,
@@ -11,7 +11,8 @@ from .token import (
 
 
 __all__ = (
-    'BaseID',
+    'IDModel',
+    'UUIDModel',
 
     'User',
     'UserCreate',

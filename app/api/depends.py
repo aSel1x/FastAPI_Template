@@ -1,5 +1,3 @@
-from typing import AsyncGenerator
-
 from fastapi import BackgroundTasks, Depends, HTTPException, Request, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -8,7 +6,7 @@ from app.core import SessionLocal, security
 from app.service import Service
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncSession:
     async with SessionLocal() as session:
         yield session
 
@@ -41,8 +39,8 @@ async def get_current_user(
             detail='You did not transfer a short token',
         )
 
-    if not (user := await service.user.db_repository.get(
-        payload.get('id') if isinstance((payload := token_short_data.get('payload')), dict) else None
+    if not (user := await service.user.db_repository.retrieve_one(
+        ident=payload.get('id') if isinstance((payload := token_short_data.get('payload')), dict) else None
     )):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found'

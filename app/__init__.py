@@ -5,13 +5,13 @@ from app import api
 from .core import settings
 
 app = FastAPI(
-    title='FastAPI template',
+    title='FastAPI Template',
     openapi_prefix=settings.API_PREFIX
 )
 
 
 @app.exception_handler(Exception)
-async def avito_exception_handler(request: Request, exc: Exception):
+async def internal_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content=exc.__str__(),

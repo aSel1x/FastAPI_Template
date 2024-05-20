@@ -1,57 +1,57 @@
-from abc import abstractmethod
+import abc
 from typing import Generic, Sequence, TypeVar
 
 import sqlmodel as sm
-from sqlalchemy import Result
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from ..models import BaseID
-
-AbstractModel = TypeVar('AbstractModel', bound=BaseID)
+AbstractModel = TypeVar('AbstractModel', bound=sm.SQLModel)
 
 
-class Repository(Generic[AbstractModel]):
-    def __init__(self, type_model: type[BaseID], session: AsyncSession):
-        self.type_model = type_model
+class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
+    def __init__(self, model: type[AbstractModel], session: AsyncSession):
+        self.model = model
         self.session = session
 
-    async def get(
-        self, ident: int | None = None, where_clauses: list[sm.DefaultClause] | None = None
-    ) -> AbstractModel | None:
-        if where_clauses is None and ident is not None:
-            where_clauses = [self.type_model.id == ident]
-        statement = sm.select(self.type_model).where(sm.and_(*where_clauses))
-        return (await self.session.exec(statement)).one_or_none()
+    async def create(self, model: AbstractModel) -> AbstractModel:
+        self.model.model_validate(model)
+        self.session.add(model)
+        await self.session.commit()
+        await self.session.refresh(model)
+        return model
 
-    async def get_many(
-        self,
-        where_clauses: list[sm.DefaultClause] | None = None,
-        limit: int | None = None,
-        order_by: sm.Column | None = None,
-    ) -> Sequence[AbstractModel]:
-        statement = sm.select(self.type_model).limit(limit).order_by(order_by)
-        if where_clauses:
-            statement = statement.where(sm.and_(*where_clauses))
-        return (await self.session.exec(statement)).all()
+    async def retrieve_one(
+            self,
+            ident: int | None = None,
+            where_clauses: list[sm.DefaultClause] | list[bool] | None = None,
+    ) -> AbstractModel | None:
+        if ident is not None:
+            return await self.session.get(self.model, ident)
+        stmt = sm.select(self.model).where(sm.and_(*where_clauses))
+        entity = await self.session.exec(stmt)
+        return entity.first()
+
+    async def retrieve_many(
+            self,
+            where_clauses: list[sm.DefaultClause] | list[bool] | None = None,
+    ) -> Sequence[AbstractModel] | None:
+        stmt = sm.select(self.model).where(sm.and_(*where_clauses))
+        entity = await self.session.exec(stmt)
+        return entity.all()
+
+    async def update(self, ident: int, **values) -> None:
+        stmt = (
+            sm.update(self.model)
+            .where(self.model.id == ident)
+            .values(values)
+        )
+        await self.session.execute(stmt)
 
     async def delete(
-            self, ident: int | None = None, where_clauses: list[sm.DefaultClause] | None = None
+            self,
+            ident: int | None = None,
+            where_clauses: list[sm.DefaultClause] | None = None
     ) -> None:
-        if where_clauses is None and ident is not None:
-            where_clauses = [self.type_model.id == ident]
-        statement = sm.delete(self.type_model).where(sm.and_(*where_clauses))
-        await self.session.execute(statement)
-
-    async def update(
-        self, ident: int | None = None, where_clauses: list[sm.DefaultClause] | None = None, **values
-    ) -> Result:
-        if where_clauses is None and ident is not None:
-            where_clauses = [self.type_model.id == ident]
-        statement = (
-            sm.update(self.type_model).values(**values).where(sm.and_(*where_clauses))
-        )
-        return await self.session.execute(statement)
-
-    @abstractmethod
-    async def new(self, in_model: AbstractModel) -> AbstractModel:
-        ...
+        if ident is not None:
+            where_clauses = [self.model.id == ident]
+        stmt = sm.delete(self.model).where(sm.and_(*where_clauses))
+        await self.session.execute(stmt)
