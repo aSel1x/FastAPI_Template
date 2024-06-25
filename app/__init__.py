@@ -5,8 +5,15 @@ from app import api
 from .core import settings
 
 app = FastAPI(
-    title='FastAPI Template',
-    openapi_prefix=settings.API_PREFIX
+    title=settings.APP_TITLE,
+    root_path=settings.APP_PATH,
+    version=settings.APP_VERSION,
+    description=settings.app_description,
+    contact={
+        'name': 'aSel1x',
+        'url': 'https://t.me/aSel1x',
+        'email': 'asel1x@icloud.com',
+    },
 )
 
 

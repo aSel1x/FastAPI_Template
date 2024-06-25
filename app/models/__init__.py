@@ -1,23 +1,17 @@
-from .base import IDModel, UUIDModel
 from .user import (
     User,
     UserCreate,
     UserBase
 )
-from .token import (
-    TokenAuth,
-    TokenPair
+from .jwt import (
+    AccessToken
 )
 
 
 __all__ = (
-    'IDModel',
-    'UUIDModel',
-
     'User',
     'UserCreate',
     'UserBase',
 
-    'TokenAuth',
-    'TokenPair'
+    'AccessToken'
 )

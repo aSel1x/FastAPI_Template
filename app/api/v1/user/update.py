@@ -1,22 +1,26 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app import models
-from app.service import Service
-
-from ... import depends
+from app.api import deps
 
 router = APIRouter()
 
 
 @router.patch('/')
-async def update_user(
+async def user_update(
         user: models.UserCreate,
-        c_user: models.User = Depends(depends.get_current_user),
-        service: Service = Depends(depends.get_service)
-) -> None:
-    """
-    Update the current user:
-    """
+        c_user: deps.CurrentUser,
+        service: deps.Service
+) -> models.UserBase:
+    """Update current user"""
 
-    await service.user.db_repository.update(ident=c_user.id, **user.model_dump())
+    await service.user.db_repository.update(
+        models.User(
+            id=c_user.id,
+            username=user.username,
+            password=deps.pwd_context.hash(user.password),
+        )
+    )
     await service.session.commit()
+    await service.session.refresh(c_user)
+    return models.UserBase(**c_user.model_dump())

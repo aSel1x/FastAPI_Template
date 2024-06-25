@@ -2,33 +2,37 @@ import datetime as dt
 import uuid
 from functools import partial
 
-from sqlmodel import Column, Field, SQLModel
+from sqlalchemy import Column as saColumn
+from sqlmodel import Field, SQLModel
 
-from app.core import types
+from app import types
 
 datetime_utcnow = partial(dt.datetime.now, tz=dt.UTC)
 
 
 class IDModel(SQLModel):
-    id: int = Field(
+    id: int | None = Field(
         default=None,
-        primary_key=True
+        primary_key=True,
+        nullable=False,
+        index=True,
     )
 
 
 class UUIDModel(SQLModel):
     external_id: uuid.UUID = Field(
         default_factory=uuid.uuid4,
-        unique=True
+        unique=True,
+        nullable=False
     )
 
 
 class TimestampModel(SQLModel):
-    created_at: dt.datetime = Field(default_factory=datetime_utcnow, sa_type=types.UnixepochType)
+    created_at: dt.datetime = Field(default_factory=datetime_utcnow, sa_type=types.Unixepoch)
     updated_at: dt.datetime | None = Field(
         default_factory=datetime_utcnow,
-        sa_column=Column(
-            sa_type=types.UnixepochType,
+        sa_column=saColumn(
+            type_=types.Unixepoch,
             onupdate=datetime_utcnow
         )
     )

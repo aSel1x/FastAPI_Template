@@ -4,7 +4,10 @@ from typing import Generic, Sequence, TypeVar
 import sqlmodel as sm
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.models.base import IDModel
+
 AbstractModel = TypeVar('AbstractModel', bound=sm.SQLModel)
+IDBasedModel = TypeVar('IDBasedModel', bound=IDModel)
 
 
 class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
@@ -38,20 +41,10 @@ class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
         entity = await self.session.exec(stmt)
         return entity.all()
 
-    async def update(self, ident: int, **values) -> None:
-        stmt = (
-            sm.update(self.model)
-            .where(self.model.id == ident)
-            .values(values)
-        )
+    async def update(self, model: IDBasedModel) -> None:
+        stmt = sm.update(self.model).where(self.model.id == model.id).values(**model.model_dump())
         await self.session.execute(stmt)
 
-    async def delete(
-            self,
-            ident: int | None = None,
-            where_clauses: list[sm.DefaultClause] | None = None
-    ) -> None:
-        if ident is not None:
-            where_clauses = [self.model.id == ident]
-        stmt = sm.delete(self.model).where(sm.and_(*where_clauses))
-        await self.session.execute(stmt)
+    async def delete(self, instance: AbstractModel) -> None:
+        await self.session.delete(instance)
+        await self.session.flush()

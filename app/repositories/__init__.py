@@ -1,4 +1,4 @@
-from .abstract import Repository
+from .abc import Repository
 from .user import UserRepository
 
 

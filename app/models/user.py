@@ -5,10 +5,11 @@ from .base import IDModel, TimestampModel
 
 class UserBase(SQLModel):
     username: str = Field()
-    is_active: bool = Field()
+    is_active: bool = Field(default=True)
 
 
-class UserCreate(UserBase):
+class UserCreate(SQLModel):
+    username: str = Field()
     password: str = Field()
 
 

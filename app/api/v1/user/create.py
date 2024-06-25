@@ -1,31 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter
 
 from app import models
-from app.service import Service
-
-from ... import depends
+from app.api import deps
+from app.core import exps
 
 router = APIRouter()
 
 
 @router.post('/')
-async def new_user(
-        user: models.UserCreate,
-        service: Service = Depends(depends.get_service)
+async def user_create(
+        data: models.UserCreate,
+        service: deps.Service
 ) -> models.UserBase:
-    """
-    Create new user:
+    """Create new user"""
 
-    - **username**: Username
-    - **password**: Password
-    """
+    if await service.user.db_repository.retrieve_by_username(data.username):
+        raise exps.USER_EXISTS
 
-    if await service.user.db_repository.get_by_username(user.username):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail='User exists.',
-        )
-
-    user = await service.user.db_repository.new(user)
-    await service.session.commit()
-    return models.UserBase(**user.__dict__)
+    data.password = deps.pwd_context.hash(data.password)
+    user = await service.user.db_repository.create(models.User(**data.model_dump()))
+    return models.UserBase(**user.model_dump())

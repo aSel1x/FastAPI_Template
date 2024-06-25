@@ -1,20 +1,15 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app import models
-
-from ... import depends
+from app.api import deps
 
 router = APIRouter()
 
 
-@router.get('/')
-async def get(
-        user: models.UserBase = Depends(depends.get_current_user)
+@router.get('/', response_model=models.UserBase)
+async def user_retrieve(
+        user: deps.CurrentUser
 ) -> models.UserBase:
-    """
-    Get current user data:
+    """Get current user"""
 
-    - **id**: ID
-    - **username**: Username
-    """
-    return models.UserBase(**user.__dict__)
+    return models.UserBase(**user.model_dump())

@@ -1,29 +1,33 @@
-from pydantic import Field, PostgresDsn, field_validator
+from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=('.env.dev', '.env')
+        env_file='.env', env_file_encoding='utf-8', case_sensitive=True
     )
 
-    API_PREFIX: str = Field(default='')
-    APP_AUTH_KEY: str = Field(default='xxxx')
-
-    POSTGRES_USER: str = Field(default='postgres')
-    POSTGRES_PASSWORD: str = Field(default='postgres')
-    POSTGRES_HOST: str = Field(default='postgres')
-    POSTGRES_PORT: int = Field(default=5432)
-    POSTGRES_DB: str = Field(default='postgres')
-
-    @field_validator('POSTGRES_HOST', mode='before')
-    @classmethod
-    def validate_postgres_host(cls, v: str):
-        return 'postgres' if v == '' else v
+    # APP
+    APP_PATH: str
+    APP_TITLE: str
+    APP_VERSION: str
+    APP_SECRET_KEY: str
 
     @property
-    def pg_dns(self) -> PostgresDsn:
-        return PostgresDsn.build(
+    def app_description(self):
+        with open('README.md', encoding='utf-8') as f:
+            return f.read()
+
+    # DATABASE
+    POSTGRES_DB: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+
+    @property
+    def pg_dsn(self) -> PostgresDsn:
+        dsn = PostgresDsn.build(
             scheme='postgresql+asyncpg',
             username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
@@ -31,6 +35,7 @@ class Settings(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+        return dsn
 
 
 settings = Settings()

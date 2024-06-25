@@ -1,7 +1,7 @@
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .services import UserService
+from .services import JWTService, UserService
 
 
 class Service:
@@ -15,3 +15,4 @@ class Service:
         self.background = background
 
         self.user = UserService(session, background)
+        self.jwt = JWTService()

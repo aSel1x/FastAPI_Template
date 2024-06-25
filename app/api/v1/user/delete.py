@@ -1,18 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app import models
-from app.service import Service
-
-from ... import depends
+from app.api import deps
 
 router = APIRouter()
 
 
 @router.delete('/')
-async def delete_user(
-        user: models.User = Depends(depends.get_current_user),
-        service: Service = Depends(depends.get_service)
-) -> None:
+async def user_delete(
+        user: deps.CurrentUser,
+        service: deps.Service
+) -> models.UserBase:
+    """Mark user as inactive"""
 
-    await service.user.db_repository.delete(user.id)
+    user.is_active = False
     await service.session.commit()
+    return models.UserBase(**user.model_dump())

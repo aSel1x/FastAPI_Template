@@ -4,28 +4,44 @@ help:
 	@echo "  make <commands>"
 	@echo ""
 	@echo "AVAILABLE COMMANDS"
+	@echo "  ref		Reformat code"
 	@echo "  run		Start the app"
-	@echo "  lint		Reformat code"
+	@echo "  docker		Docker container build"
 	@echo "  migrate	Alembic migrate database"
 	@echo "  generate	Alembic generate database"
-	@echo "  docker		Docker container build"
+	@echo "  req		pyproject.toml >> requirements.txt"
 
-.PHONY: lint
-lint:
-	poetry run ruff ./app --fix && poetry run black ./app
+.PHONY:	blue
+blue:
+	poetry run blue app/
+
+.PHONY: isort
+isort:
+	poetry run isort app/
+
+.PHONY: ruff
+ruff:
+	poetry run ruff check app/ --fix --respect-gitignore
+
+.PHONY: ref
+ref: blue isort ruff
 
 .PHONY: run
 run:
-	poetry run python -m app
+	poetry run fastapi dev app
 
-.PHONY: generate
-generate:
-	poetry run alembic revision --autogenerate
+.PHONY: docker
+docker:
+	docker-compose up -d
 
 .PHONY: migrate
 migrate:
 	poetry run alembic upgrade head
 
-.PHONY: docker
-docker:
-	docker-compose up -d
+.PHONY: generate
+generate:
+	poetry run alembic revision --autogenerate
+
+.PHONY: req
+req:
+	poetry export --without-hashes --without-urls | awk '{ print $1 }' FS=';' > requirements.txt

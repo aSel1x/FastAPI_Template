@@ -6,17 +6,18 @@ authors = ["Selix <asel1x@icloud.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "^0.110.0"
-sqlmodel = "^0.0.16"
-uvicorn = "^0.28.0"
-pydantic-settings = "^2.2.1"
-asyncpg = "^0.29.0"
+python = "^3.12"
+fastapi = "^0.111.0"
+sqlmodel = "^0.0.19"
 python-jose = "^3.3.0"
-passlib = "^1.7.4"
-pre-commit = "^3.6.2"
+pyjwt = "^2.8.0"
 alembic = "^1.13.1"
+asyncpg = "^0.29.0"
+pydantic-settings = "^2.3.4"
+passlib = "^1.7.4"
+pre-commit = "^3.7.1"
 greenlet = "^3.0.3"
+bcrypt = "4.0.1"
 
 
 [build-system]
