@@ -44,4 +44,4 @@ generate:
 
 .PHONY: req
 req:
-	poetry export --without-hashes --without-urls | awk '{ print $1 }' FS=';' > requirements.txt
+	@poetry export --without-hashes --without-urls | sed 's/;.*//' | tee requirements.txt
