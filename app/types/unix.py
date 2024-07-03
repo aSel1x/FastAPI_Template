@@ -16,5 +16,6 @@ class Unixepoch(TypeDecorator):
         elif isinstance(value, dt.date):
             return int(dt.datetime.combine(value, dt.time.min).timestamp())
 
-    def process_result_value(self, value: int, dialect) -> dt.datetime:
-        return dt.datetime.fromtimestamp(value, dt.UTC)
+    def process_result_value(self, value: int, dialect) -> dt.datetime | None:
+        if isinstance(value, int):
+            return dt.datetime.fromtimestamp(value, dt.UTC)

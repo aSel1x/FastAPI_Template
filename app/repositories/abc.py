@@ -27,17 +27,27 @@ class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
             ident: int | None = None,
             where_clauses: list[sm.DefaultClause] | list[bool] | None = None,
     ) -> AbstractModel | None:
+        stmt = sm.select(self.model)
         if ident is not None:
             return await self.session.get(self.model, ident)
-        stmt = sm.select(self.model).where(sm.and_(*where_clauses))
+        if where_clauses is not None:
+            stmt.where(sm.and_(*where_clauses))
         entity = await self.session.exec(stmt)
         return entity.first()
 
     async def retrieve_many(
             self,
             where_clauses: list[sm.DefaultClause] | list[bool] | None = None,
+            limit: int | None = None,
+            order_by: sm.Column | None = None
     ) -> Sequence[AbstractModel] | None:
-        stmt = sm.select(self.model).where(sm.and_(*where_clauses))
+        stmt = sm.select(self.model)
+        if where_clauses is not None:
+            stmt = stmt.where(sm.and_(*where_clauses))
+        if limit is not None:
+            stmt = stmt.limit(limit)
+        if order_by is not None:
+            stmt = stmt.order_by(order_by)
         entity = await self.session.exec(stmt)
         return entity.all()
 
@@ -48,3 +58,4 @@ class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
     async def delete(self, instance: AbstractModel) -> None:
         await self.session.delete(instance)
         await self.session.flush()
+        await self.session.commit()

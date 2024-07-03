@@ -13,11 +13,10 @@ async def auth(
         service: deps.Service,
 ):
     """Retrieve new access token"""
-    if user := await service.user.db_repository.retrieve_by_username(data.username):
-        if not deps.pwd_context.verify(data.password, user.password):
-            raise exps.USER_IS_CORRECT
-    else:
+    if not (user := await service.user.db_repository.retrieve_by_username(data.username)):
         raise exps.USER_NOT_FOUND
+    if not deps.pwd_context.verify(data.password, user.password):
+        raise exps.USER_IS_CORRECT
 
     return models.AccessToken(
         token=service.jwt.encode_token({'id': user.id}, 1440)

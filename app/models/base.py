@@ -28,11 +28,19 @@ class UUIDModel(SQLModel):
 
 
 class TimestampModel(SQLModel):
-    created_at: dt.datetime = Field(default_factory=datetime_utcnow, sa_type=types.Unixepoch)
-    updated_at: dt.datetime | None = Field(
+    created_at: dt.datetime | int = Field(
         default_factory=datetime_utcnow,
+        sa_type=types.Unixepoch,
+        nullable=False,
+    )
+    updated_at: dt.datetime | int | None = Field(
         sa_column=saColumn(
+            default=None,
             type_=types.Unixepoch,
-            onupdate=datetime_utcnow
+            onupdate=datetime_utcnow,
+            nullable=True,
         )
     )
+
+    class Config:
+        arbitrary_types_allowed = True
