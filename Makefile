@@ -11,20 +11,9 @@ help:
 	@echo "  generate	Alembic generate database"
 	@echo "  req		pyproject.toml >> requirements.txt"
 
-.PHONY:	blue
-blue:
-	poetry run blue app/
-
-.PHONY: isort
-isort:
-	poetry run isort app/
-
-.PHONY: ruff
-ruff:
-	poetry run ruff check app/ --fix --respect-gitignore
 
 .PHONY: ref
-ref: blue isort ruff
+ref: poetry run pre-commit run --all-files
 
 .PHONY: run
 run:
