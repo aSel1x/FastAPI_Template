@@ -1,39 +1,44 @@
 from typing import Annotated
 
-from fastapi import BackgroundTasks, Depends
+from fastapi import Depends
 from fastapi.security import APIKeyHeader
 from passlib.context import CryptContext
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import models
 from app.core import exps
-from app.core.db import SessionLocal
-from app.service import Service as __Service
+from app.core.db import Database as __Database
+from app.core.db import get_session
+from app.core.service import Service as __Service
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
-async def get_session() -> AsyncSession:
-    async with SessionLocal() as session:
-        yield session
+async def get_db(
+        session: Annotated[AsyncSession, Depends(get_session)],
+) -> __Database:
+    return __Database(session)
 
 
-async def get_service(
-        session: Annotated[SessionLocal, Depends(get_session)],
-        background: Annotated[BackgroundTasks, BackgroundTasks()]
-) -> __Service:
-    return Service(session, background)
+Database = Annotated[__Database, Depends(get_db)]
 
-Service = Annotated[__Service, Depends(get_service)]
+
+async def get_services() -> __Service:
+    return __Service()
+
+
+Service = Annotated[__Service, Depends(get_services)]
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(APIKeyHeader(name='access-token'))],
-    service: Annotated[Service, Depends(get_service)],
+        token: Annotated[str, Depends(APIKeyHeader(name='access-token'))],
+        db: Database,
+        service: Service
 ) -> models.User:
     payload = service.jwt.decode_token(token)
-    if not (user := await service.user.db_repository.retrieve_one(ident=payload.get('id'))):
+    if not (user := await db.user.retrieve_one(ident=payload.get('id'))):
         raise exps.USER_NOT_FOUND
     return user
+
 
 CurrentUser = Annotated[models.User, Depends(get_current_user)]

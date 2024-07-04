@@ -10,13 +10,13 @@ router = APIRouter()
 @router.post('/')
 async def user_create(
         data: models.UserCreate,
-        service: deps.Service
+        db: deps.Database,
 ) -> models.UserBase:
     """Create new user"""
 
-    if await service.user.db_repository.retrieve_by_username(data.username):
+    if await db.user.retrieve_by_username(data.username):
         raise exps.USER_EXISTS
 
     data.password = deps.pwd_context.hash(data.password)
-    user = await service.user.db_repository.create(models.User(**data.model_dump()))
+    user = await db.user.create(models.User(**data.model_dump()))
     return models.UserBase(**user.model_dump())

@@ -10,10 +10,11 @@ router = APIRouter()
 @router.post('/token', response_model=models.AccessToken)
 async def auth(
         data: models.UserCreate,
-        service: deps.Service,
+        db: deps.Database,
+        service: deps.Service
 ):
     """Retrieve new access token"""
-    if not (user := await service.user.db_repository.retrieve_by_username(data.username)):
+    if not (user := await db.user.retrieve_by_username(data.username)):
         raise exps.USER_NOT_FOUND
     if not deps.pwd_context.verify(data.password, user.password):
         raise exps.USER_IS_CORRECT

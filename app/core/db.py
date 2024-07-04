@@ -1,11 +1,13 @@
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app import repositories as repos
 from app.core import settings
 
 
 def get_async_engine() -> AsyncEngine:
-    print(settings.pg_dsn)
     engine: AsyncEngine = create_async_engine(
         settings.pg_dsn.unicode_string(), echo=False, future=True
     )
@@ -19,3 +21,15 @@ SessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+
+
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with SessionLocal() as session:
+        yield session
+
+
+class Database:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+        self.user = repos.UserRepository(session)

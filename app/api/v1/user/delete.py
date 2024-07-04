@@ -9,10 +9,10 @@ router = APIRouter()
 @router.delete('/')
 async def user_delete(
         user: deps.CurrentUser,
-        service: deps.Service
+        db: deps.Database
 ) -> models.UserBase:
     """Mark user as inactive"""
 
     user.is_active = False
-    await service.session.commit()
+    await db.session.commit()
     return models.UserBase(**user.model_dump())
