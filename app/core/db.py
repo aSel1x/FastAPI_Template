@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -35,7 +36,5 @@ class Database:
         self.user = repos.UserRepository(session)
 
     @classmethod
-    async def get(cls) -> 'Database':
-        async for session in get_session():
-            return cls(session)
-        raise RuntimeError('Unable to get database session')
+    async def get(cls, session: AsyncSession = Depends(get_session)) -> 'Database':
+        return cls(session)

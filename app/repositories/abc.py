@@ -31,7 +31,7 @@ class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
             return await self.session.get(self.model, ident)
         stmt = sm.select(self.model)
         if where_clauses is not None:
-            stmt.where(sm.and_(*where_clauses))
+            stmt = stmt.where(sm.and_(*where_clauses))
         entity = await self.session.exec(stmt)
         return entity.first()
 
