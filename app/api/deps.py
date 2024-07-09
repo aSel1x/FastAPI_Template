@@ -15,7 +15,7 @@ pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 
 async def get_db(
-        session: Annotated[AsyncSession, Depends(get_session)],
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> __Database:
     return __Database(session)
 
@@ -23,17 +23,13 @@ async def get_db(
 Database = Annotated[__Database, Depends(get_db)]
 
 
-async def get_services() -> __Service:
-    return __Service()
-
-
-Service = Annotated[__Service, Depends(get_services)]
+Service = Annotated[__Service, Depends(__Service)]
 
 
 async def get_current_user(
-        token: Annotated[str, Depends(APIKeyHeader(name='access-token'))],
-        db: Database,
-        service: Service
+    token: Annotated[str, Depends(APIKeyHeader(name='access-token'))],
+    db: Database,
+    service: Service,
 ) -> models.User:
     payload = service.jwt.decode_token(token)
     if not (user := await db.user.retrieve_one(ident=payload.get('id'))):
