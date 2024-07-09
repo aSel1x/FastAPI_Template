@@ -3,27 +3,15 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import APIKeyHeader
 from passlib.context import CryptContext
-from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import models
 from app.core import exps
 from app.core.db import Database as __Database
-from app.core.db import get_session
 from app.core.service import Service as __Service
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
-
-async def get_db(
-    session: Annotated[AsyncSession, Depends(get_session)],
-) -> __Database:
-    return __Database(session)
-
-
-Database = Annotated[__Database, Depends(get_db)]
-
-
 Service = Annotated[__Service, Depends(__Service)]
+Database = Annotated[__Database, Depends(__Database.get)]
 
 
 async def get_current_user(

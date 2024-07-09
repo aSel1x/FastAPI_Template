@@ -33,3 +33,9 @@ class Database:
         self.session = session
 
         self.user = repos.UserRepository(session)
+
+    @classmethod
+    async def get(cls) -> 'Database':
+        async for session in get_session():
+            return cls(session)
+        raise RuntimeError('Unable to get database session')
