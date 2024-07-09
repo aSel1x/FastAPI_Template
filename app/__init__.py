@@ -2,16 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import api
-from .core import settings
+from app.core import settings
 
 app = FastAPI(
     title=settings.APP_TITLE,
     root_path=settings.APP_PATH,
     version=settings.APP_VERSION,
-    description=settings.app_description,
     contact={
         'name': 'aSel1x',
-        'url': 'https://t.me/aSel1x',
+        'url': 'https://asel1x.github.io',
         'email': 'asel1x@icloud.com',
     },
 )

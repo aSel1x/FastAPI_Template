@@ -27,9 +27,9 @@ class Repository(Generic[AbstractModel], metaclass=abc.ABCMeta):
             ident: int | None = None,
             where_clauses: list[sm.DefaultClause] | list[bool] | None = None,
     ) -> AbstractModel | None:
-        stmt = sm.select(self.model)
         if ident is not None:
             return await self.session.get(self.model, ident)
+        stmt = sm.select(self.model)
         if where_clauses is not None:
             stmt.where(sm.and_(*where_clauses))
         entity = await self.session.exec(stmt)
